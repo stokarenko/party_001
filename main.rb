@@ -8,7 +8,7 @@ require_relative 'processors'
 require_relative 'models'
 
 role_slugs = Role::SLUGS + %w[UNKNOWN_ROLE_SLUG]
-users_count = 10
+users_count = 1000
 users_data = users_count.times.map { |i|
   {
     name: "John Connor #{i}",

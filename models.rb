@@ -18,8 +18,7 @@ class Locale
   attr_accessor :id
 
   def self.default
-    DBConnection.execute("SELECT * FROM locales WHERE default is true LIMIT 1")
-    new(id: "locale_default_id")
+    UserProcessor.handler.default_locale
   end
 
   def initialize(id:)
@@ -58,12 +57,6 @@ class User
     true
   end
 
-  private
-
-  def insert
-    DBConnection.execute("INSERT INTO users #{insert_fields} VALUES #{insert_values}")
-  end
-
   def insert_fields
     fields = %w[name role_id locale_id].join(', ')
     "(#{fields})"
@@ -72,5 +65,11 @@ class User
   def insert_values
     values = [name, role_id, locale_id].map { |v| "'#{v}'" }.join(', ')
     "(#{values})"
+  end
+
+  private
+
+  def insert
+    UserProcessor.handler.insert_user(self)
   end
 end

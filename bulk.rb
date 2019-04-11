@@ -17,7 +17,7 @@ module Bulk
 
       breakpoints = { nil => initial_breakpoint }
 
-      2.times do
+      while breakpoints.present? do
         method, breakpoint = breakpoints.shift
 
         if method
@@ -55,5 +55,23 @@ class Breakpoint
   def initialize
     self.fibers = []
     self.bulk_params = []
+  end
+end
+
+
+module BreakpointDSL
+  def self.extended(klass)
+    klass.include klass.parent
+  end
+
+  def breakpoint(method)
+    alias_method :"breakpoint_#{method}", method
+
+    define_method(method) do |*params|
+      Fiber.yield(
+        method: method,
+        singular_params: params
+      )
+    end
   end
 end

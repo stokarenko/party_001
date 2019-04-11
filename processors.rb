@@ -12,17 +12,22 @@ module UserProcessor
     Role.new(id: "role_#{slug}_id", slug: slug)
   end
 
+  def default_locale
+    DBConnection.execute("SELECT * FROM locales WHERE default is true LIMIT 1")
+    Locale.new(id: "locale_default_id")
+  end
+
+  def insert_user(user)
+    DBConnection.execute("INSERT INTO users #{user.insert_fields} VALUES #{user.insert_values}")
+  end
+
   class Bulk
-    include UserProcessor
+    extend BreakpointDSL
+    extend Memoist
 
-    def role_by_slug(*params)
-      Fiber.yield(
-        method: :role_by_slug,
-        singular_params: params
-      )
-    end
+    memoize :default_locale
 
-    def breakpoint_role_by_slug(slugs)
+    breakpoint def role_by_slug(slugs)
       normalized_slugs = slugs.uniq
       query_slugs = normalized_slugs.map { |s| "'#{s}'" }.join(', ')
 
@@ -37,6 +42,11 @@ module UserProcessor
           enum << roles[slug]
         end
       end
+    end
+
+    breakpoint def insert_user(users)
+      insert_values = users.map(&:insert_values).join(', ')
+      DBConnection.execute("INSERT INTO users #{users.first.insert_fields} VALUES #{insert_values}")
     end
   end
 end

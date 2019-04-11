@@ -10,6 +10,7 @@ GEM
     concurrent-ruby (1.1.5)
     i18n (1.5.1)
       concurrent-ruby (~> 1.0)
+    memoist (0.15.0)
     minitest (5.11.3)
     thread_safe (0.3.6)
     tzinfo (1.2.5)
@@ -21,6 +22,7 @@ PLATFORMS
 DEPENDENCIES
   activesupport
   awesome_print
+  memoist
 
 BUNDLED WITH
    1.16.5
