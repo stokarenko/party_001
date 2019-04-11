@@ -1,6 +1,8 @@
 require 'bundler'
 Bundler.require
 
+require 'pp'
+
 require_relative 'bulk'
 require_relative 'processors'
 require_relative 'models'
@@ -28,10 +30,8 @@ DBConnection.reset_queries_count
 inserted_users_count = 0
 
 bulk_handler = UserProcessor::Bulk.new
-Bulk.engage(bulk_handler: bulk_handler) do
-  users_data.each do |user_data|
-    inserted_users_count += 1 if User.new(user_data).save
-  end
+Bulk.engage(bulk_handler: bulk_handler, collection: users_data) do |user_data|
+  inserted_users_count += 1 if User.new(user_data).save
 end
 puts "Inserted users: #{inserted_users_count}"
 puts "SQL queries: #{DBConnection.queries_count}"
