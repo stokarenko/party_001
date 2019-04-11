@@ -1,30 +1,37 @@
-# 20:10
-# 20:30 - models
-
 require 'bundler'
 Bundler.require
 
-AwesomePrint.defaults = {
-  indent: 2,
-  index: false
-}
-
+require_relative 'bulk'
+require_relative 'processors'
 require_relative 'models'
 
 role_slugs = Role::SLUGS + %w[UNKNOWN_ROLE_SLUG]
-users_count = 1
+users_count = 10
 users_data = users_count.times.map { |i|
   {
-    name: "John Conner #{i}",
+    name: "John Connor #{i}",
     role_slug: role_slugs.sample
   }
 }
 
+puts '! SINGULAR MODE !'
 inserted_users_count = 0
-
 users_data.each do |user_data|
   inserted_users_count += 1 if User.new(user_data).save
 end
+puts "Inserted users: #{inserted_users_count}"
+puts "SQL queries: #{DBConnection.queries_count}"
 
+puts
+puts '! BULK MODE !'
+DBConnection.reset_queries_count
+inserted_users_count = 0
+
+bulk_handler = UserProcessor::Bulk.new
+Bulk.engage(bulk_handler: bulk_handler) do
+  users_data.each do |user_data|
+    inserted_users_count += 1 if User.new(user_data).save
+  end
+end
 puts "Inserted users: #{inserted_users_count}"
 puts "SQL queries: #{DBConnection.queries_count}"

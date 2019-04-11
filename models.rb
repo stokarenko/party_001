@@ -4,7 +4,7 @@ module DBConnection
 
   class << self
     def execute(query)
-      puts "SQL QQUERY: #{query}"
+      puts "SQL QUERY: #{query}"
       self.queries_count += 1
     end
 
@@ -18,7 +18,7 @@ class Locale
   attr_accessor :id
 
   def self.default
-    DBConnection.execute("SELECT * FROM locales WHERE default is true")
+    DBConnection.execute("SELECT * FROM locales WHERE default is true LIMIT 1")
     new(id: "locale_default_id")
   end
 
@@ -33,10 +33,7 @@ class Role
   attr_accessor :id, :slug
 
   def self.find_by_slug(slug)
-    DBConnection.execute("SELECT * FROM roles WHERE slug = '#{slug}'")
-    return unless SLUGS.include?(slug)
-
-    new(id: "role_#{slug}_id", slug: slug)
+    UserProcessor.handler.role_by_slug(slug)
   end
 
   def initialize(id:, slug:)
@@ -64,7 +61,7 @@ class User
   private
 
   def insert
-    DBConnection.execute("IMSERT INTO users #{insert_fields} VALUES #{insert_values}")
+    DBConnection.execute("INSERT INTO users #{insert_fields} VALUES #{insert_values}")
   end
 
   def insert_fields
